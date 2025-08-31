@@ -39,3 +39,11 @@ Download specific branch to custom folder:
 
 ## License
 MIT
+
+## Contributing
+
+Issues and pull requests are welcome!  
+- Found a bug? Please open an Issue.  
+- Have an idea for improvement? Feel free to send a Pull Request.  
+
+This project is kept simple, so please keep changes small and focused.
