@@ -8,3 +8,7 @@ Desktop.ini
 # Editor
 .vscode/
 .idea/
+
+# Test Results
+testResults.xml
+testResults.html
