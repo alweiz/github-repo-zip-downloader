@@ -39,9 +39,10 @@ jobs:
       - name: Run Pester tests
         shell: pwsh
         run: |
+          Import-Module Pester -Force
           $cfg = New-PesterConfiguration
-          $cfg.Run.Path = 'Tests'
-          $cfg.Run.CI   = $true
+          $cfg.Run.Path  = 'Tests'
+          $cfg.Run.Exit  = $true          # 失敗で非 0 終了
           $cfg.Output.Verbosity = 'Detailed'
           $cfg.TestResult.Enabled      = $true
           $cfg.TestResult.OutputPath   = 'testResults.xml'
