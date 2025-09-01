@@ -9,6 +9,7 @@ Describe 'Get-GitHubRepoZip UI basic construction' -Skip:([System.Environment]::
         $content = $content -replace 'Test-GhAuth',''
         $content = $content -replace '\$btnRefreshRepos\.PerformClick\(\)\s*\|\s*Out-Null',''
         $content = $content -replace '\[void\]\$form\.ShowDialog\(\)',''
+        $PSScriptRoot = Split-Path $scriptPath
         Invoke-Expression $content
 
         $form | Should -Not -BeNullOrEmpty
