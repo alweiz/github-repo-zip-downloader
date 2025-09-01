@@ -92,9 +92,17 @@ function Get-Branches {
   $json = & gh api ('repos/{0}/branches?per_page=100' -f $Repo)
   $items = $json | ConvertFrom-Json
   $pairs = foreach ($b in $items) {
-    [PSCustomObject]@{ name=$b.name; updated=$b.commit.commit.author.date }
+    $updated = $null
+    if ($b -and $b.commit -and $b.commit.commit -and $b.commit.commit.author -and $b.commit.commit.author.date) {
+      $updated = $b.commit.commit.author.date
+    }
+    [PSCustomObject]@{ name=$b.name; updated=$updated }
   }
-  return ($pairs | Sort-Object { Get-Date $_.updated } -Descending | Select-Object -ExpandProperty name)
+  return (
+    $pairs |
+      Sort-Object { if ($_.updated) { Get-Date $_.updated } else { [datetime]::MinValue } } -Descending |
+      Select-Object -ExpandProperty name
+  )
 }
 
 function Get-DefaultBranch {
