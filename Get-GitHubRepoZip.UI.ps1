@@ -2,7 +2,17 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 $ErrorActionPreference = 'Stop'
-. "$PSScriptRoot\Get-GitHubRepoZip.Core.ps1"
+# Resolve path to core script even if $PSScriptRoot is empty
+$scriptDir = if($PSScriptRoot){ $PSScriptRoot } else { (Get-Location).Path }
+$corePath  = Join-Path $scriptDir 'Get-GitHubRepoZip.Core.ps1'
+if(-not (Test-Path -LiteralPath $corePath)){
+    # fallback to parent directory when running from Tests or other subfolders
+    $corePath = Join-Path (Split-Path -Parent $scriptDir) 'Get-GitHubRepoZip.Core.ps1'
+}
+if(-not (Test-Path -LiteralPath $corePath)){
+    throw 'Get-GitHubRepoZip.Core.ps1 not found.'
+}
+. $corePath
 
 Test-GhAuth
 
