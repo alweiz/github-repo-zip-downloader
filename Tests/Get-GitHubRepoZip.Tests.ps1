@@ -96,6 +96,37 @@ if (-not $script:GhAvailable) {
 
 # ===== 準備/後片付け =====
 BeforeAll {
+    # TestRoot / CLI を再解決（CI での Run フェーズ用）
+    if (-not $script:TestRoot -or [string]::IsNullOrWhiteSpace($script:TestRoot)) {
+        try {
+            if ($PSCommandPath) {
+                $script:TestRoot = Split-Path -Parent $PSCommandPath
+            } elseif ($MyInvocation.PSCommandPath) {
+                $script:TestRoot = Split-Path -Parent $MyInvocation.PSCommandPath
+            } elseif ($PSScriptRoot) {
+                $script:TestRoot = $PSScriptRoot
+            } else {
+                $script:TestRoot = (Resolve-Path '.').Path
+            }
+        } catch { $script:TestRoot = (Resolve-Path '.').Path }
+    }
+
+    if (-not $script:RepoRootGuess -or [string]::IsNullOrWhiteSpace($script:RepoRootGuess)) {
+        $script:RepoRootGuess = [System.IO.Path]::GetFullPath((Join-Path $script:TestRoot '..'))
+    }
+
+    if (-not $script:Cli -or [string]::IsNullOrWhiteSpace($script:Cli)) {
+        $CliCandidates = @(
+            (Join-Path $script:RepoRootGuess 'Get-GitHubRepoZip.ps1'),
+            (Join-Path $script:TestRoot     '..\Get-GitHubRepoZip.ps1'),
+            (Join-Path (Get-Location)       'Get-GitHubRepoZip.ps1')
+        ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+        if ($CliCandidates.Count -eq 0) {
+            throw "Get-GitHubRepoZip.ps1 not found. Looked in:`n - $script:RepoRootGuess`n - $script:TestRoot\..\`n - $(Get-Location)"
+        }
+        $script:Cli = (Resolve-Path $CliCandidates[0]).Path
+    }
+
     # OutDir が未初期化/空なら再作成（スコープ耐性）
     if (-not $script:OutDir -or [string]::IsNullOrWhiteSpace($script:OutDir)) {
         $script:TempRoot = Resolve-TempRoot
