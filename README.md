@@ -1,77 +1,140 @@
 # GitHub Repo ZIP Downloader
 
-A simple PowerShell script to download the latest source code of public/private GitHub repositories as a ZIP archive.
-Uses `gh auth token` internally, so no need to manage PATs in your script.
+PowerShell だけで **GitHub リポジトリの最新ソース ZIP** を素早く取得する軽量スクリプト集。  
+内部で GitHub CLI (`gh auth token`) を使用し **PAT 不要 / 認証管理不要**。
+
+## 特長 (Features)
+- 単一スクリプト実行で ZIP 取得（[`Get-GitHubRepoZip.ps1`](Get-GitHubRepoZip.ps1)）
+- Windows Forms GUI（[`Get-GitHubRepoZip.UI.ps1`](Get-GitHubRepoZip.UI.ps1)）は起動時に
+  - リポジトリ一覧自動取得（`gh repo list`）
+  - 先頭リポジトリのブランチ候補自動取得（PR ヘッド含む）
+- 最新オープン PR の head ブランチを自動選択（`-LatestPR` / [`Get-LatestOpenPrHead`](Get-GitHubRepoZip.Core.ps1)）
+- ブランチ / タグ / SHA 任意指定
+- 出力先フォルダ自動解決（ユーザーの Downloads 実パス: [`Get-DownloadsPath`](Get-GitHubRepoZip.Core.ps1)）
+- 厳格エラーチェック（HTTP ステータス / HTML 誤保存検出）
+- Pester による Unit + E2E テスト
 
 ## Requirements
-- Windows PowerShell 5.1+ (or PowerShell 7+)
-- [GitHub CLI (`gh`)](https://cli.github.com/) and `gh auth login`
+- Windows PowerShell 5.1 以上 または PowerShell 7+
+- [GitHub CLI (gh)](https://cli.github.com/) インストール & `gh auth login`
+  - CI では `GITHUB_TOKEN` を利用（`tests.yml` 参照）
 
-## Usage
-
-Run from PowerShell:
-
+## クイックスタート (Quick Start)
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\Get-GitHubRepoZip.ps1 owner/repo [branch-or-tag] [output-folder]
-```
+# 1. リポジトリを取得
+git clone https://github.com/alweiz/github-repo-zip-downloader.git
+cd github-repo-zip-downloader
 
-### Parameters
+# 2. 既定ブランチ ZIP をダウンロード
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Get-GitHubRepoZip.ps1 alweiz/github-repo-zip-downloader
 
-| Parameter | Description |
-|-----------|-------------|
-| `-Repo` | `owner/repo` (optional if `-RepoListPath` or `-ChooseRepo` is used) |
-| `-Ref` | Branch, tag, or commit SHA. Combine with `-ChooseBranch` or `-LatestPR` to resolve automatically. |
-| `-OutputDir` | Target folder for the ZIP archive. Defaults to the user's Downloads folder. |
-| `-RepoListPath` | File containing `owner/repo` entries (one per line) for quick selection. |
-| `-ChooseRepo` | Interactively select a repository from your `gh repo list` output. |
-| `-ChooseBranch` | Interactively choose a branch after selecting a repository. |
-| `-LatestPR` | Use the head branch of the latest open pull request if one exists. |
-
-## Examples
-
-Download default branch:
-
-```powershell
-.\Get-GitHubRepoZip.ps1 alweiz/github-repo-zip-downloader
-```
-
-Download specific branch to custom folder:
-
-```powershell
-.\Get-GitHubRepoZip.ps1 alweiz/github-repo-zip-downloader main "D:\Downloads"
-```
-
-## GUI
-
-A simple Windows Forms front end is also included:
-
-```powershell
+# 3. GUI
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Get-GitHubRepoZip.UI.ps1
 ```
 
-It lets you pick the repository, branch (including the latest PR head), and output folder through dropdowns.
+## CLI 使い方
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Get-GitHubRepoZip.ps1 -Repo owner/repo [-Ref branch|tag|sha] [-OutputDir path] [-LatestPR] [-ChooseRepo] [-ChooseBranch] [-RepoListPath file]
+```
 
-## Notes
-- If `[branch-or-tag]` is omitted, the default branch’s latest is downloaded.
-- The script auto-detects the real **Downloads** folder location via registry (works even if moved to D:).
+### 主なパラメータ
+| パラメータ | 説明 |
+|-----------|------|
+| `-Repo` | `owner/repo`。`-ChooseRepo` / `-RepoListPath` で代替可 |
+| `-Ref` | ブランチ / タグ / コミット SHA。省略時は `-LatestPR` / `-ChooseBranch` / 既定ブランチ解決 |
+| `-OutputDir` | ZIP 保存先。省略時は Downloads |
+| `-RepoListPath` | 行ごとに `owner/repo` を記述したファイル（`#` 先頭はコメント） |
+| `-ChooseRepo` | 対話メニューでリポジトリ選択（`gh repo list` 100件） |
+| `-ChooseBranch` | 対話メニューでブランチ選択（[`Get-Branches`](Get-GitHubRepoZip.Core.ps1)） |
+| `-LatestPR` | 最新 Open PR の head ブランチを優先（無ければスキップ終了） |
 
-## Why
-- One-click way to fetch the freshest ZIP for private repos without opening GitHub in a browser.
-- No need to embed a PAT; uses `gh auth token` at runtime.
+### 例
+```powershell
+# 既定ブランチ
+.\Get-GitHubRepoZip.ps1 -Repo alweiz/github-repo-zip-downloader
 
-## License
-MIT
+# ブランチ指定
+.\Get-GitHubRepoZip.ps1 -Repo alweiz/github-repo-zip-downloader -Ref main -OutputDir D:\Downloads
+
+# 最新 PR head (PR 無ければ exit code 3)
+.\Get-GitHubRepoZip.ps1 -Repo alweiz/github-repo-zip-downloader -LatestPR
+
+# 対話選択（リポジトリ → ブランチ）
+.\Get-GitHubRepoZip.ps1 -ChooseRepo -ChooseBranch
+```
+
+## Exit Codes
+| Code | 意味 |
+|------|------|
+| 0 | 正常終了 |
+| 1 | 一般的な失敗（入力エラー / HTTP エラー等） |
+| 3 | 条件未成立（例: `-LatestPR` 指定だがオープン PR なし） |
+
+## 内部コア関数
+| 関数 | 役割 |
+|------|------|
+| [`Test-GhAuth`](Get-GitHubRepoZip.Core.ps1) | gh 存在 & 認証確認 |
+| [`Invoke-ZipballDownload`](Get-GitHubRepoZip.Core.ps1) | ZIP 取得メイン（HTTP / 検証） |
+| [`Get-RepoList`](Get-GitHubRepoZip.Core.ps1) | 最近更新順リポ一覧 |
+| [`Get-Branches`](Get-GitHubRepoZip.Core.ps1) | ブランチ一覧（存在しない commit 情報を安全参照） |
+| [`Get-DefaultBranch`](Get-GitHubRepoZip.Core.ps1) | 既定ブランチ取得 |
+| [`Get-LatestOpenPrHead`](Get-GitHubRepoZip.Core.ps1) | 最新 Open PR head ブランチ |
+| [`Get-DownloadsPath`](Get-GitHubRepoZip.Core.ps1) | Downloads 実パス取得 |
+
+## GUI
+実行:
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Get-GitHubRepoZip.UI.ps1
+```
+起動時に:
+1. リポジトリ一覧を即時取得（コンボへ投入）
+2. 先頭リポのブランチ候補を取得（`Use latest open PR branch` チェック時は PR head を先頭候補）
+3. 保存先は自動で Downloads
+
+ブランチリストは:
+1. チェック有りかつ PR head 存在 → それを追加
+2. 通常ブランチ一覧
+3. 取得できなければ既定ブランチフォールバック
+
+## テスト
+Pester 5 を使用（[Tests/](Tests/)）。
+- Unit: [`Get-Branches.Tests.ps1`](Tests/Get-Branches.Tests.ps1)
+- E2E: [`Get-GitHubRepoZip.Tests.ps1`](Tests/Get-GitHubRepoZip.Tests.ps1), [`Get-GitHubRepoZip.UI.Tests.ps1`](Tests/Get-GitHubRepoZip.UI.Tests.ps1)
+
+ローカル:
+```powershell
+Invoke-Pester -Path .\Tests -CI -Output Detailed
+```
+
+gh 未認証・未インストールの場合 E2E は自動 Skip。
+
+CI: GitHub Actions ([.github/workflows/tests.yml](.github/workflows/tests.yml))
+
+生成された NUnit 形式結果: `testResults.xml`（.gitignore 済み）
+
+## 開発 (Development)
+- 主要ロジック: [`Get-GitHubRepoZip.Core.ps1`](Get-GitHubRepoZip.Core.ps1)
+- CLI エントリ: [`Get-GitHubRepoZip.ps1`](Get-GitHubRepoZip.ps1)
+- UI エントリ: [`Get-GitHubRepoZip.UI.ps1`](Get-GitHubRepoZip.UI.ps1)
+
+改善アイデア（今後）:
+- モジュール化 & `psd1` 化
+- HTTP リトライ / RateLimit 考慮
+- キャッシュ（リポ / ブランチ）短期保存
+- PowerShell Gallery 公開
+
+## トラブルシュート
+| 症状 | 対処 |
+|------|------|
+| `gh not found` | GitHub CLI をインストール（例: `winget install GitHub.cli -e`） |
+| `Run: gh auth login` | `gh auth login` 実行（CI は `GITHUB_TOKEN`） |
+| HTML を ZIP として保存 | 出力 ZIP が 0.5KB 未満の場合自動検出し削除、Ref / 権限を確認 |
+
+## ライセンス
+MIT （[LICENSE](LICENSE)）
 
 ## Contributing
+Issue / PR 歓迎。小さく焦点を絞った変更を推奨。
 
-Issues and pull requests are welcome!
-- Found a bug? Please open an Issue.
-- Have an idea for improvement? Feel free to send a Pull Request.
-
-This project is kept simple, so please keep changes small and focused.
-
-## Tests
-This repo uses Pester for CLI E2E tests.
-
-- Local: `Invoke-Pester -Path .\Tests -CI`
-- CI: GitHub Actions runs tests on push/PR (uses `GITHUB_TOKEN` for `gh`).
+---
+Made with PowerShell ❤️
