@@ -137,4 +137,4 @@ MIT （[LICENSE](LICENSE)）
 Issue / PR 歓迎。小さく焦点を絞った変更を推奨。
 
 ---
-Made with PowerShell ❤️
+Made with PowerShell
