@@ -47,3 +47,9 @@ Issues and pull requests are welcome!
 - Have an idea for improvement? Feel free to send a Pull Request.  
 
 This project is kept simple, so please keep changes small and focused.
+
+## Tests
+This repo uses Pester for CLI E2E tests.
+
+- Local: `Invoke-Pester -Path .\Tests -CI`
+- CI: GitHub Actions runs tests on push/PR (uses `GITHUB_TOKEN` for `gh`).
