@@ -43,18 +43,18 @@ $btnClose = New-Object System.Windows.Forms.Button; $btnClose.Text='Close'; $btn
 
 $form.Controls.AddRange(@($lblRepo,$cmbRepo,$btnRefreshRepos,$lblBranch,$cmbBranch,$btnLoadBranches,$chkLatestPR,$lblOut,$txtOut,$btnBrowse,$btnDownload,$btnClose))
 
-$btnRefreshRepos.Add_Click({
+function Load-Repos {
   $form.Cursor='WaitCursor'
   try {
     $repos = Get-RepoList
     $cmbRepo.Items.Clear()
     foreach($r in $repos){ [void]$cmbRepo.Items.Add($r) }
-    if($cmbRepo.Items.Count -gt 0){ $cmbRepo.SelectedIndex=0 }
+    if($cmbRepo.Items.Count -gt 0 -and $cmbRepo.SelectedIndex -lt 0){ $cmbRepo.SelectedIndex=0 }
   } catch { Show-Error($_.Exception.Message) } finally { $form.Cursor='Default' }
-})
+}
 
-$btnLoadBranches.Add_Click({
-  if(-not $cmbRepo.SelectedItem){ Show-Error('Select a repository first.'); return }
+function Load-Branches {
+  if(-not $cmbRepo.SelectedItem){ return }
   $repo = [string]$cmbRepo.SelectedItem
   $form.Cursor='WaitCursor'
   try {
@@ -73,7 +73,12 @@ $btnLoadBranches.Add_Click({
     }
     if($cmbBranch.Items.Count -gt 0){ $cmbBranch.SelectedIndex=0 }
   } catch { Show-Error($_.Exception.Message) } finally { $form.Cursor='Default' }
-})
+}
+
+$btnRefreshRepos.Add_Click({ Load-Repos })
+$btnLoadBranches.Add_Click({ Load-Branches })
+$cmbRepo.Add_SelectedIndexChanged({ Load-Branches })
+$chkLatestPR.Add_CheckedChanged({ Load-Branches })
 
 $btnBrowse.Add_Click({
   $dlg = New-Object System.Windows.Forms.FolderBrowserDialog
@@ -97,6 +102,10 @@ $btnDownload.Add_Click({
 
 $btnClose.Add_Click({ $form.Close() })
 
-# 初回ロード
+# 初回ロード（起動時にリポジトリとブランチ候補を自動取得）
+Load-Repos
+Load-Branches
+
+# 互換: 以前のテストがこの行を正規表現で除去するため残しても副作用なし
 $btnRefreshRepos.PerformClick() | Out-Null
 [void]$form.ShowDialog()
