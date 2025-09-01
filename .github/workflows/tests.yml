@@ -39,11 +39,11 @@ jobs:
       - name: Run Pester tests
         shell: pwsh
         run: |
-          Invoke-Pester -Path .\Tests -CI -Output Detailed -OutputFormat NUnitXml -OutputFile 
+          Invoke-Pester -Path .\Tests -CI -Output Detailed -OutputFormat NUnitXml -OutputFile testResults.xml
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: 
+          path: testResults.xml
