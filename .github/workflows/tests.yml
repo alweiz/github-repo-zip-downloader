@@ -39,7 +39,14 @@ jobs:
       - name: Run Pester tests
         shell: pwsh
         run: |
-          Invoke-Pester -Path .\Tests -CI -Output Detailed -OutputFormat NUnitXml -OutputFile testResults.xml
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = 'Tests'
+          $cfg.Run.CI   = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          $cfg.TestResult.Enabled      = $true
+          $cfg.TestResult.OutputPath   = 'testResults.xml'
+          $cfg.TestResult.OutputFormat = 'NUnitXml'
+          Invoke-Pester -Configuration $cfg
 
       - name: Upload test results
         if: always()
