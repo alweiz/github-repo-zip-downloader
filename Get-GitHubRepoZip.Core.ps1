@@ -99,11 +99,27 @@ function Get-Branches {
 
 function Get-DefaultBranch {
   param([Parameter(Mandatory=$true)][string]$Repo)
-  return (& gh repo view -R $Repo --json defaultBranchRef --jq '.defaultBranchRef.name').Trim()
+  try {
+    $json = & gh api ("repos/{0}" -f $Repo) 2>$null
+  } catch {
+    # 404 なら null 返して呼び出し側で判断（例: テストで Skip など）
+    if ($_.Exception.Message -match '404') { return $null }
+    throw
+  }
+  $obj = $json | ConvertFrom-Json
+  if (-not $obj -or -not $obj.default_branch) { return $null }
+  return $obj.default_branch
 }
 
 function Get-LatestOpenPrHead {
   param([Parameter(Mandatory=$true)][string]$Repo)
-  $head = (& gh pr list -R $Repo --state open --limit 50 --json headRefName,updatedAt --jq 'sort_by(.updatedAt)|reverse|.[0].headRefName').Trim()
-  if ($head) { return $head } else { return $null }
+  try {
+    $json = & gh api ("repos/{0}/pulls?state=open&per_page=50" -f $Repo) 2>$null
+  } catch {
+    if ($_.Exception.Message -match '404') { return $null }
+    throw
+  }
+  $arr = $json | ConvertFrom-Json
+  if (-not $arr -or $arr.Count -eq 0) { return $null }
+  ($arr | Sort-Object { Get-Date $_.updated_at } -Descending | Select-Object -First 1).head.ref
 }
