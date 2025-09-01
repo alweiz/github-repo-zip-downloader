@@ -87,15 +87,31 @@ function Get-RepoList {
   return ($list -split "`n") | Where-Object { $_ -and $_.Trim() -ne '' }
 }
 
+function Get-NestedValue {
+  param(
+    [Parameter(Mandatory = $true)]$InputObject,
+    [Parameter(Mandatory = $true)][string[]]$PropertyPath
+  )
+  $current = $InputObject
+  foreach ($prop in $PropertyPath) {
+    if ($null -eq $current) { return $null }
+    $psprop = $current.PSObject.Properties[$prop]
+    if ($psprop) {
+      $current = $psprop.Value
+    }
+    else {
+      return $null
+    }
+  }
+  return $current
+}
+
 function Get-Branches {
   param([Parameter(Mandatory=$true)][string]$Repo)
   $json = & gh api ('repos/{0}/branches?per_page=100' -f $Repo)
   $items = $json | ConvertFrom-Json
   $pairs = foreach ($b in $items) {
-    $updated = $null
-    if ($b -and $b.commit -and $b.commit.commit -and $b.commit.commit.author -and $b.commit.commit.author.date) {
-      $updated = $b.commit.commit.author.date
-    }
+    $updated = Get-NestedValue -InputObject $b -PropertyPath @('commit','commit','author','date')
     [PSCustomObject]@{ name=$b.name; updated=$updated }
   }
   return (
