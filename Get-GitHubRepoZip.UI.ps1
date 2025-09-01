@@ -43,7 +43,7 @@ $btnClose = New-Object System.Windows.Forms.Button; $btnClose.Text='Close'; $btn
 
 $form.Controls.AddRange(@($lblRepo,$cmbRepo,$btnRefreshRepos,$lblBranch,$cmbBranch,$btnLoadBranches,$chkLatestPR,$lblOut,$txtOut,$btnBrowse,$btnDownload,$btnClose))
 
-function Load-Repos {
+function Update-RepoCombo {
   $form.Cursor='WaitCursor'
   try {
     $repos = Get-RepoList
@@ -53,7 +53,7 @@ function Load-Repos {
   } catch { Show-Error($_.Exception.Message) } finally { $form.Cursor='Default' }
 }
 
-function Load-Branches {
+function Update-BranchCombo {
   if(-not $cmbRepo.SelectedItem){ return }
   $repo = [string]$cmbRepo.SelectedItem
   $form.Cursor='WaitCursor'
@@ -75,10 +75,10 @@ function Load-Branches {
   } catch { Show-Error($_.Exception.Message) } finally { $form.Cursor='Default' }
 }
 
-$btnRefreshRepos.Add_Click({ Load-Repos })
-$btnLoadBranches.Add_Click({ Load-Branches })
-$cmbRepo.Add_SelectedIndexChanged({ Load-Branches })
-$chkLatestPR.Add_CheckedChanged({ Load-Branches })
+$btnRefreshRepos.Add_Click({ Update-RepoCombo })
+$btnLoadBranches.Add_Click({ Update-BranchCombo })
+$cmbRepo.Add_SelectedIndexChanged({ Update-BranchCombo })
+$chkLatestPR.Add_CheckedChanged({ Update-BranchCombo })
 
 $btnBrowse.Add_Click({
   $dlg = New-Object System.Windows.Forms.FolderBrowserDialog
@@ -102,9 +102,9 @@ $btnDownload.Add_Click({
 
 $btnClose.Add_Click({ $form.Close() })
 
-# 初回ロード（起動時にリポジトリとブランチ候補を自動取得）
-Load-Repos
-Load-Branches
+# 初期化（起動時にリポジトリとブランチ候補を自動取得）
+Update-RepoCombo
+Update-BranchCombo
 
 # 互換: 以前のテストがこの行を正規表現で除去するため残しても副作用なし
 $btnRefreshRepos.PerformClick() | Out-Null
