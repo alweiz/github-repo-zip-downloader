@@ -1,6 +1,6 @@
 # GitHub Repo ZIP Downloader
 
-A simple PowerShell script to download the latest source code of public/private GitHub repositories as a ZIP archive.  
+A simple PowerShell script to download the latest source code of public/private GitHub repositories as a ZIP archive.
 Uses `gh auth token` internally, so no need to manage PATs in your script.
 
 ## Requirements
@@ -14,6 +14,18 @@ Run from PowerShell:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Get-GitHubRepoZip.ps1 owner/repo [branch-or-tag] [output-folder]
 ```
+
+### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `-Repo` | `owner/repo` (optional if `-RepoListPath` or `-ChooseRepo` is used) |
+| `-Ref` | Branch, tag, or commit SHA. Combine with `-ChooseBranch` or `-LatestPR` to resolve automatically. |
+| `-OutputDir` | Target folder for the ZIP archive. Defaults to the user's Downloads folder. |
+| `-RepoListPath` | File containing `owner/repo` entries (one per line) for quick selection. |
+| `-ChooseRepo` | Interactively select a repository from your `gh repo list` output. |
+| `-ChooseBranch` | Interactively choose a branch after selecting a repository. |
+| `-LatestPR` | Use the head branch of the latest open pull request if one exists. |
 
 ## Examples
 
@@ -29,6 +41,16 @@ Download specific branch to custom folder:
 .\Get-GitHubRepoZip.ps1 alweiz/github-repo-zip-downloader main "D:\Downloads"
 ```
 
+## GUI
+
+A simple Windows Forms front end is also included:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Get-GitHubRepoZip.UI.ps1
+```
+
+It lets you pick the repository, branch (including the latest PR head), and output folder through dropdowns.
+
 ## Notes
 - If `[branch-or-tag]` is omitted, the default branch’s latest is downloaded.
 - The script auto-detects the real **Downloads** folder location via registry (works even if moved to D:).
@@ -42,9 +64,9 @@ MIT
 
 ## Contributing
 
-Issues and pull requests are welcome!  
-- Found a bug? Please open an Issue.  
-- Have an idea for improvement? Feel free to send a Pull Request.  
+Issues and pull requests are welcome!
+- Found a bug? Please open an Issue.
+- Have an idea for improvement? Feel free to send a Pull Request.
 
 This project is kept simple, so please keep changes small and focused.
 
