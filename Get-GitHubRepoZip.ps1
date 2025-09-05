@@ -9,8 +9,9 @@ param(
   [switch]$LatestPR         # 最新 open PR の head ブランチ優先
 )
 
+
 $ErrorActionPreference = 'Stop'
-. "$PSScriptRoot\Get-GitHubRepoZip.Core.ps1"
+. "$PSScriptRoot\lib\Get-GitHubRepoZip.Core.ps1"
 
 # --- Exit codes ---
 $EXIT_SUCCESS        = 0

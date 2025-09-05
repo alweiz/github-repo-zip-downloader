@@ -4,13 +4,15 @@ Add-Type -AssemblyName System.Drawing
 $ErrorActionPreference = 'Stop'
 # Resolve path to core script even if $PSScriptRoot is empty
 $scriptDir = if($PSScriptRoot){ $PSScriptRoot } else { (Get-Location).Path }
-$corePath  = Join-Path $scriptDir 'Get-GitHubRepoZip.Core.ps1'
+
+# lib 配下に移動した Core を参照
+$corePath  = Join-Path $scriptDir 'lib\Get-GitHubRepoZip.Core.ps1'
 if(-not (Test-Path -LiteralPath $corePath)){
-    # fallback to parent directory when running from Tests or other subfolders
-    $corePath = Join-Path (Split-Path -Parent $scriptDir) 'Get-GitHubRepoZip.Core.ps1'
+  # fallback: 親ディレクトリから lib を参照
+  $corePath = Join-Path (Split-Path -Parent $scriptDir) 'lib\Get-GitHubRepoZip.Core.ps1'
 }
 if(-not (Test-Path -LiteralPath $corePath)){
-    throw 'Get-GitHubRepoZip.Core.ps1 not found.'
+  throw 'lib/Get-GitHubRepoZip.Core.ps1 not found.'
 }
 . $corePath
 

@@ -8,9 +8,9 @@ PowerShell だけで **GitHub リポジトリの最新ソース ZIP** を素早�
 - Windows Forms GUI（[`Get-GitHubRepoZip.UI.ps1`](Get-GitHubRepoZip.UI.ps1)）は起動時に
   - リポジトリ一覧自動取得（`gh repo list`）
   - 先頭リポジトリのブランチ候補自動取得（PR ヘッド含む）
-- 最新オープン PR の head ブランチを自動選択（`-LatestPR` / [`Get-LatestOpenPrHead`](Get-GitHubRepoZip.Core.ps1)）
+- 最新オープン PR の head ブランチを自動選択（`-LatestPR` / [`Get-LatestOpenPrHead`](lib/Get-GitHubRepoZip.Core.ps1)）
 - ブランチ / タグ / SHA 任意指定
-- 出力先フォルダ自動解決（ユーザーの Downloads 実パス: [`Get-DownloadsPath`](Get-GitHubRepoZip.Core.ps1)）
+- 出力先フォルダ自動解決（ユーザーの Downloads 実パス: [`Get-DownloadsPath`](lib/Get-GitHubRepoZip.Core.ps1)）
 - 厳格エラーチェック（HTTP ステータス / HTML 誤保存検出）
 - Pester による Unit + E2E テスト
 
@@ -45,7 +45,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\Get-GitHubRepoZip.ps1 -Rep
 | `-OutputDir` | ZIP 保存先。省略時は Downloads |
 | `-RepoListPath` | 行ごとに `owner/repo` を記述したファイル（`#` 先頭はコメント） |
 | `-ChooseRepo` | 対話メニューでリポジトリ選択（`gh repo list` 100件） |
-| `-ChooseBranch` | 対話メニューでブランチ選択（[`Get-Branches`](Get-GitHubRepoZip.Core.ps1)） |
+| `-ChooseBranch` | 対話メニューでブランチ選択（[`Get-Branches`](lib/Get-GitHubRepoZip.Core.ps1)） |
 | `-LatestPR` | 最新 Open PR の head ブランチを優先（無ければスキップ終了） |
 
 ### 例
@@ -73,13 +73,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\Get-GitHubRepoZip.ps1 -Rep
 ## 内部コア関数
 | 関数 | 役割 |
 |------|------|
-| [`Test-GhAuth`](Get-GitHubRepoZip.Core.ps1) | gh 存在 & 認証確認 |
-| [`Invoke-ZipballDownload`](Get-GitHubRepoZip.Core.ps1) | ZIP 取得メイン（HTTP / 検証） |
-| [`Get-RepoList`](Get-GitHubRepoZip.Core.ps1) | 最近更新順リポ一覧 |
-| [`Get-Branches`](Get-GitHubRepoZip.Core.ps1) | ブランチ一覧（存在しない commit 情報を安全参照） |
-| [`Get-DefaultBranch`](Get-GitHubRepoZip.Core.ps1) | 既定ブランチ取得 |
-| [`Get-LatestOpenPrHead`](Get-GitHubRepoZip.Core.ps1) | 最新 Open PR head ブランチ |
-| [`Get-DownloadsPath`](Get-GitHubRepoZip.Core.ps1) | Downloads 実パス取得 |
+| [`Test-GhAuth`](lib/Get-GitHubRepoZip.Core.ps1) | gh 存在 & 認証確認 |
+| [`Invoke-ZipballDownload`](lib/Get-GitHubRepoZip.Core.ps1) | ZIP 取得メイン（HTTP / 検証） |
+| [`Get-RepoList`](lib/Get-GitHubRepoZip.Core.ps1) | 最近更新順リポ一覧 |
+| [`Get-Branches`](lib/Get-GitHubRepoZip.Core.ps1) | ブランチ一覧（存在しない commit 情報を安全参照） |
+| [`Get-DefaultBranch`](lib/Get-GitHubRepoZip.Core.ps1) | 既定ブランチ取得 |
+| [`Get-LatestOpenPrHead`](lib/Get-GitHubRepoZip.Core.ps1) | 最新 Open PR head ブランチ |
+| [`Get-DownloadsPath`](lib/Get-GitHubRepoZip.Core.ps1) | Downloads 実パス取得 |
 
 ## GUI
 実行:
@@ -113,7 +113,7 @@ CI: GitHub Actions ([.github/workflows/tests.yml](.github/workflows/tests.yml))
 生成された NUnit 形式結果: `testResults.xml`（.gitignore 済み）
 
 ## 開発 (Development)
-- 主要ロジック: [`Get-GitHubRepoZip.Core.ps1`](Get-GitHubRepoZip.Core.ps1)
+- 主要ロジック: [`Get-GitHubRepoZip.Core.ps1`](lib/Get-GitHubRepoZip.Core.ps1)
 - CLI エントリ: [`Get-GitHubRepoZip.ps1`](Get-GitHubRepoZip.ps1)
 - UI エントリ: [`Get-GitHubRepoZip.UI.ps1`](Get-GitHubRepoZip.UI.ps1)
 

@@ -12,3 +12,9 @@ Desktop.ini
 # Test Results
 testResults.xml
 testResults.html
+
+# Build Output
+dist/
+
+# README file for zip
+README.txt
