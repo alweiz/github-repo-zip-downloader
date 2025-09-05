@@ -5,7 +5,7 @@ param(
   [string]$Icon     = ".\assets\app.ico",
   [string]$Product  = "GitHub Repo Zip Downloader",
   [string]$Company  = "alweiz",
-  [string]$Version  = "1.1.1.0"
+  [string]$Version  = "1.1.2.0"
 )
 
 $ErrorActionPreference = "Stop"
