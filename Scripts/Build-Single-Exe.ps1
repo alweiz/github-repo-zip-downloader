@@ -1,7 +1,7 @@
 param(
   [string]$UiPath   = ".\Get-GitHubRepoZip.UI.ps1",
   [string]$CorePath = ".\lib\Get-GitHubRepoZip.Core.ps1",
-  [string]$OutExe   = ".\dist\GithubRepoZip.exe",
+  [string]$OutExe   = ".\dist\GithubRepoZipDownloader.exe",
   [string]$Icon     = ".\assets\app.ico",
   [string]$Product  = "GitHub Repo Zip Downloader",
   [string]$Company  = "alweiz",
