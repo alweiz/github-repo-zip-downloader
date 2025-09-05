@@ -5,16 +5,22 @@ $ErrorActionPreference = 'Stop'
 # Resolve path to core script even if $PSScriptRoot is empty
 $scriptDir = if($PSScriptRoot){ $PSScriptRoot } else { (Get-Location).Path }
 
-# lib 配下に移動した Core を参照
-$corePath  = Join-Path $scriptDir 'lib\Get-GitHubRepoZip.Core.ps1'
-if(-not (Test-Path -LiteralPath $corePath)){
-  # fallback: 親ディレクトリから lib を参照
-  $corePath = Join-Path (Split-Path -Parent $scriptDir) 'lib\Get-GitHubRepoZip.Core.ps1'
+# Core がインライン済みなら外部 Core を探さない
+if (-not (Get-Command Test-GhAuth -ErrorAction SilentlyContinue)) {
+  # Resolve path to core script even if $PSScriptRoot is empty
+  $scriptDir = if($PSScriptRoot){ $PSScriptRoot } else { (Get-Location).Path }
+
+  # lib 配下に移動した Core を参照
+  $corePath  = Join-Path $scriptDir 'lib\Get-GitHubRepoZip.Core.ps1'
+  if(-not (Test-Path -LiteralPath $corePath)){
+    # fallback: 親ディレクトリから lib を参照
+    $corePath = Join-Path (Split-Path -Parent $scriptDir) 'lib\Get-GitHubRepoZip.Core.ps1'
+  }
+  if(-not (Test-Path -LiteralPath $corePath)){
+    throw 'lib/Get-GitHubRepoZip.Core.ps1 not found.'
+  }
+  . $corePath
 }
-if(-not (Test-Path -LiteralPath $corePath)){
-  throw 'lib/Get-GitHubRepoZip.Core.ps1 not found.'
-}
-. $corePath
 
 Test-GhAuth
 
