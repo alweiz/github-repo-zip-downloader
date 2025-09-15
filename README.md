@@ -134,7 +134,7 @@ CI: GitHub Actions ([.github/workflows/tests.yml](.github/workflows/tests.yml))
 | HTML を ZIP として保存 | 出力 ZIP が 0.5KB 未満の場合自動検出し削除、Ref / 権限を確認 |
 
 ## ライセンス
-MIT （[LICENSE](LICENSE)）
+Apache-2.0 （[LICENSE](LICENSE)）
 
 ## Contributing
 Issue / PR 歓迎。小さく焦点を絞った変更を推奨。
