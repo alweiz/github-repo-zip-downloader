@@ -21,9 +21,9 @@ $core = Get-Content $CorePath -Raw -Encoding UTF8
 # 1) UI 先頭に Core をインライン
 $packed = $core + "`r`n" + $ui
 
-# 2) UI 内の「Core を dot-source している行」を削除（Join-Path パターンも含めて消す）
-$dotSourcePattern = '^\s*\.\s*.*Get-GitHubRepoZip\.Core\.ps1.*$'  # 行全体にマッチ
-$packed = [regex]::Replace($packed, $dotSourcePattern, '', 'Multiline')
+# 2) UI 内の「Core を dot-source している部分」を削除（if文ブロック全体を削除）
+$coreLoadingPattern = '(?s)if \(-not \(Get-Command Test-GhAuth -ErrorAction SilentlyContinue\)\) \{.*?\n\}'
+$packed = [regex]::Replace($packed, $coreLoadingPattern, '', 'Multiline')
 
 # 一時 ps1 を出力
 Set-Content -Path $temp -Value $packed -Encoding UTF8

@@ -12,6 +12,11 @@ Describe 'Get-GitHubRepoZip UI basic construction' -Skip:([System.Environment]::
         $uiScriptDir = Split-Path $scriptPath
         Push-Location $uiScriptDir
         try {
+            # Load core functions needed by UI
+            $corePath = Join-Path $uiScriptDir 'lib\Get-GitHubRepoZip.Core.ps1'
+            if (Test-Path -LiteralPath $corePath) {
+                . $corePath
+            }
             Invoke-Expression $content
         }
         finally {
