@@ -82,6 +82,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\Get-GitHubRepoZip.ps1 -Rep
 | [`Get-DownloadsPath`](lib/Get-GitHubRepoZip.Core.ps1) | Downloads 実パス取得 |
 
 ## GUI
+
+![GitHub Repo ZIP Downloader GUI](assets/gui-screenshot.png)
+
 実行:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Get-GitHubRepoZip.UI.ps1
